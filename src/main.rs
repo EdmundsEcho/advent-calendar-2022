@@ -1,7 +1,7 @@
 use std::include_str;
 
 #[derive(Debug, PartialEq, Eq)]
-enum RPS {
+pub enum RPS {
     Rock,
     Paper,
     Scisors,
@@ -35,18 +35,26 @@ impl RPS {
             _ => 3,
         }
     }
-    pub fn score_hands(hand_1: &RPS, hand_2: &RPS) -> (u32, u32) {
-        let score_1 = hand_1.rps_score() + hand_1.win_loss_score(hand_2);
-        let score_2 = hand_2.rps_score() + hand_2.win_loss_score(hand_1);
-        (score_1, score_2)
-    }
 }
 
-// top 3
+pub fn score_hands(hand_1: &RPS, hand_2: &RPS) -> (u32, u32) {
+    let score_1 = hand_1.rps_score() + hand_1.win_loss_score(hand_2);
+    let score_2 = hand_2.rps_score() + hand_2.win_loss_score(hand_1);
+    (score_1, score_2)
+}
+
 pub fn main() {
     let vec = include_str!("input.txt")
         .lines()
-        .map(|line| line.split(" ").map(|char| RPS::from(char)).collect::Vec<_>());
+        .map(|line| {
+            line.split(" ")
+                .map(|char| RPS::from(char))
+                .collect::<Vec<_>>()
+        })
+        .map(|vec_pair| score_hands(&vec_pair[0], &vec_pair[1]))
+        .collect::<Vec<_>>()
+        .iter()
+        .fold((0, 0), |acc, pair| (acc.0 + pair.0, acc.1 + pair.1));
 
     // vec.sort_by(|a, b| b.cmp(a));
 
