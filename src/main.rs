@@ -8,7 +8,6 @@ pub fn main() {
     let chunks = include_bytes!("input.txt").split(|b| *b == b'\n').chunks(3);
     let result = chunks
         .into_iter()
-        // .inspect(|x| println!("{:?}", x.count()));
         .map(|chunk| {
             // find a way to identify the first char found in each of the
             // 3 lines in the chunk
