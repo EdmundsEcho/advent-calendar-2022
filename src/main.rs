@@ -1,45 +1,47 @@
 // process 3 lines in a batch
 // find matching values in all 3
 // compute the priority of each
-use itertools::Itertools;
-use std::collections::HashSet;
+use chomp::ascii::decimal;
+use chomp::prelude::*;
+
+#[macro_use]
+extern crate chomp;
+
+fn parse_range<I: U8Input>(i: I) -> SimpleResult<I, (u32, u32)> {
+    // a simulated do notation
+    parse! {i;
+    let low = decimal() <* token(b'-');
+    let high = decimal();
+        ret (low, high)
+    }
+}
+
+fn is_subset(r1: (u32, u32), r2: (u32, u32)) -> bool {
+    r1.0 <= r2.0 && r1.1 >= r2.1
+}
+fn is_overlap(r1: (u32, u32), r2: (u32, u32)) -> bool {
+    !(r1.1 < r2.0 || r2.1 < r1.0)
+}
 
 pub fn main() {
-    let chunks = include_bytes!("input.txt").split(|b| *b == b'\n').chunks(3);
-    let result = chunks
-        .into_iter()
-        .map(|chunk| {
-            // find a way to identify the first char found in each of the
-            // 3 lines in the chunk
-            let hash_sets = chunk
-                .map(|line| line.iter().collect::<HashSet<_>>())
-                .collect::<Vec<HashSet<_>>>();
-
-            let mut result = hash_sets[0].clone();
-            for hash_set in hash_sets.iter().skip(1) {
-                result = result.intersection(hash_set).copied().collect();
-            }
-            result
+    let binding = include_bytes!("input.txt")
+        .split(|b| *b == b'\n')
+        .map(|line| line.split(|b| *b == b','))
+        .flatten()
+        .collect::<Vec<_>>()
+        .chunks(2)
+        // .inspect(|x| println!("chunk: {:?}", x))
+        .map(|ranges| {
+            ranges
+                .iter()
+                .map(|range| parse_only(parse_range, range))
+                .filter_map(Result::ok)
+                .collect::<Vec<_>>()
         })
-        .filter(|hs| !hs.is_empty())
-        /*
-        .inspect(|x| {
-            println!(
-                "{:?}",
-                String::from_utf8(x.iter().cloned().map(|&b| b).collect::<Vec<u8>>())
-            )
-        }) */
-        .map(|set| set.iter().next().cloned()) // convert hashset -> option<value>
-        .filter_map(|x| x)
-        .map(|matched| {
-            let b = matched;
-            if b >= &b'a' {
-                (b - b'a') as u32 + 1
-            } else {
-                (b - b'A') as u32 + 27
-            }
-        })
-        .sum::<u32>();
+        .filter(|ranges| !ranges.is_empty())
+        .filter(|ranges| is_subset(ranges[0], ranges[1]) || is_subset(ranges[1], ranges[0]))
+        .count();
+    // .collect::<Vec<_>>();
 
-    println!("Answer: {:?}", result);
+    println!("Answer: {:?}", binding);
 }
