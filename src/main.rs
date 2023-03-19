@@ -39,7 +39,7 @@ pub fn main() {
                 .collect::<Vec<_>>()
         })
         .filter(|ranges| !ranges.is_empty())
-        .filter(|ranges| is_subset(ranges[0], ranges[1]) || is_subset(ranges[1], ranges[0]))
+        .filter(|ranges| is_overlap(ranges[0], ranges[1]))
         .count();
     // .collect::<Vec<_>>();
 
