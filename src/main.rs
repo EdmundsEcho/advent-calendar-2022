@@ -69,6 +69,15 @@ fn apply_move(start_value: &mut Stacks, move_value: Move) -> Result<(), String> 
     Ok(())
 }
 
+fn apply_move_2(start_value: &mut Stacks, move_value: Move) -> Result<(), String> {
+    // in chunks (a single move) pop from, push to
+    // 🦀 make sure >= 0
+    let split_pos = start_value[move_value.from_stack].len() - move_value.number_crates;
+    let moved_vec = start_value[move_value.from_stack].split_off(split_pos);
+    start_value[move_value.to_stack].extend(moved_vec);
+    Ok(())
+}
+
 //    [P]                 [Q]     [T]
 fn read_nine(data: &[u8]) -> [u8; 9] {
     let mut result = [0u8; 9];
@@ -131,7 +140,7 @@ pub fn main() {
         .filter(|line| !line.is_empty())
         .map(|line| {
             let (_, mv) = parse_move(line).unwrap();
-            apply_move(stacks, mv).unwrap();
+            apply_move_2(stacks, mv).unwrap();
         })
         .collect::<Vec<_>>();
 
@@ -140,6 +149,5 @@ pub fn main() {
     let answer = get_answer(&stacks, &mut answer);
     println!("Raw start: {:?}", raw_start);
     println!("Stacks: {:?}", &stacks);
-    // println!("Moves: {:?}", &moves);
     println!("Final Answer: {:?}", &answer);
 }
