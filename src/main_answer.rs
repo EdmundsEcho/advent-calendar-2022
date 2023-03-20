@@ -1,19 +1,19 @@
 pub fn main() {
     println!(
         "{}",
-        include_bytes!("input.txt")
-            .split(|b| *b == b'\n')
-            .collect::<Vec<_>>()
-            .chunks(3)
-            .map(|set| set[0]
-                .iter()
-                .find(|b| set[1].contains(b) && set[2].contains(b))
-                .unwrap())
-            .map(|b| if *b >= b'a' {
-                (b - b'a') as i16 + 1
-            } else {
-                (b - b'A') as i16 + 27
+        include_str!("../input.txt")
+            .lines()
+            .map(|l| {
+                let (l, r) = l.split_once(',').unwrap();
+                let ((a, b), (c, d)) = (l.split_once('-').unwrap(), r.split_once('-').unwrap());
+                (
+                    a.parse::<u8>().unwrap(),
+                    b.parse::<u8>().unwrap(),
+                    c.parse::<u8>().unwrap(),
+                    d.parse::<u8>().unwrap(),
+                )
             })
-            .sum::<i16>(),
+            .filter(|(a, b, c, d)| a <= d && c <= b)
+            .count()
     );
 }
